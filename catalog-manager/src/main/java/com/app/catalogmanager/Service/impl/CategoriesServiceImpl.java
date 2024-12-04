@@ -3,6 +3,8 @@ package com.app.catalogmanager.Service.impl;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.app.catalogmanager.DTO.request.CategoriesRequest;
@@ -45,16 +47,30 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public boolean deleteCategories(Long id) {
-        if(id == null) {
+        if (id == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }
-        Optional<Categories> categories = categoriesRepository.findById(id);
-
-        if (!categories.isPresent()) {
-            return false;
-        }else{
-            categoriesRepository.delete(categories.get());
+        Optional<Categories> categoryOptional = categoriesRepository.findById(id);
+        if (categoryOptional.isPresent()) {
+            categoriesRepository.delete(categoryOptional.get());
             return true;
         }
+        return false;
+    }
+
+
+    @Override
+    public Page<CategoriesResponse> allcategories(Pageable pageable) {
+        Page<Categories> categories = categoriesRepository.findAll(pageable);
+        return categories.map(categoriesMapper::toResponse);
+    }
+
+    @Override
+    public Page<CategoriesResponse> getCategoriesByName(String name, Pageable pageable) {
+        Page<Categories> categories = categoriesRepository.findByNameContainingIgnoreCase(name,pageable);
+        if (categories == null) {
+            throw new RuntimeException("Categories not found");
+        }
+        return categories.map(categoriesMapper::toResponse);
     }
 }
