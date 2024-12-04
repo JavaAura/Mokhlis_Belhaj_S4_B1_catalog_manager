@@ -1,5 +1,7 @@
 package com.app.catalogmanager.Service.impl;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,9 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public CategoriesResponse createCategories(CategoriesRequest categoriesRequest) {
+        if(categoriesRequest == null) {
+            throw new IllegalArgumentException("Categories request cannot be null");
+        }
         Categories categories = categoriesMapper.toEntity(categoriesRequest);
         categoriesRepository.save(categories);
         return categoriesMapper.toResponse(categories);
@@ -28,6 +33,9 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public CategoriesResponse updateCategories(Long id, CategoriesRequest categoriesRequest) {
+        if(id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
         Categories categories = categoriesRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Categories not found"));
         categories.setName(categoriesRequest.getName());
@@ -37,7 +45,16 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public boolean deleteCategories(Long id) {
-        categoriesRepository.deleteById(id);
-        return true;
+        if(id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        Optional<Categories> categories = categoriesRepository.findById(id);
+
+        if (!categories.isPresent()) {
+            return false;
+        }else{
+            categoriesRepository.delete(categories.get());
+            return true;
+        }
     }
 }
