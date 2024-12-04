@@ -63,4 +63,15 @@ public class ProduitsServiceImpl implements ProduitsService {
         produitsRepository.save(produits);
         return produitsMapper.toResponse(produits);
     }
+
+    @Override
+    public boolean deleteProduits(Long id) {
+        boolean exists = produitsRepository.existsById(id);
+        if (!exists) {
+            return false;
+        }else{
+            produitsRepository.deleteById(id);
+            return true;
+        }
+    }
 }

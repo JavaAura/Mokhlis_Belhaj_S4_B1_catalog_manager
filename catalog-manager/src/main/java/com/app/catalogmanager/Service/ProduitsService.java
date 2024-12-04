@@ -8,5 +8,6 @@ public interface ProduitsService {
 
     ProduitsResponse createProduits(ProduitsRequest produitsRequest);
     ProduitsResponse updateProduits(Long id, ProduitsRequest produitsRequest);
+    boolean deleteProduits(Long id);
     
 }

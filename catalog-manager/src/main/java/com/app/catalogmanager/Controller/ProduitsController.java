@@ -28,5 +28,15 @@ public class ProduitsController {
         ProduitsResponse produitsResponse = produitsService.updateProduits(id, produitsRequest);
         return ResponseEntity.ok(produitsResponse);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteProduits(@PathVariable Long id) {
+        boolean deleted = produitsService.deleteProduits(id);
+        if (!deleted) {
+            throw new RuntimeException("Produits not found");
+        } else {
+            return ResponseEntity.noContent().build();
+        }
+    }
     
 }
