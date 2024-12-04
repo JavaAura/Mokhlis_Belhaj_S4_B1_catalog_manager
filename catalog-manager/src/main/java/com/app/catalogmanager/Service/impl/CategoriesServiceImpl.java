@@ -34,4 +34,10 @@ public class CategoriesServiceImpl implements CategoriesService {
         categoriesRepository.save(categories);
         return categoriesMapper.toResponse(categories);
     }
+
+    @Override
+    public boolean deleteCategories(Long id) {
+        categoriesRepository.deleteById(id);
+        return true;
+    }
 }

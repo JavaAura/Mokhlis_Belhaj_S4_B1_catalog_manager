@@ -30,5 +30,14 @@ public class CategoriesController {
         CategoriesResponse response = categoriesService.updateCategories(id, categoriesRequest);
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteCategories(@PathVariable Long id) {
+        boolean deleted = categoriesService.deleteCategories(id);
+        if(deleted) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
     
 }
