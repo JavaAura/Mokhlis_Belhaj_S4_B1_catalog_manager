@@ -4,10 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.app.catalogmanager.DTO.request.CategoriesRequest;
 import com.app.catalogmanager.DTO.response.CategoriesResponse;
@@ -25,6 +22,12 @@ public class CategoriesController {
     @PostMapping
     public ResponseEntity<CategoriesResponse> createCategories(@Valid @RequestBody CategoriesRequest categoriesRequest) {
         CategoriesResponse response = categoriesService.createCategories(categoriesRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoriesResponse> updateCategories(@PathVariable Long id, @Valid @RequestBody CategoriesRequest categoriesRequest) {
+        CategoriesResponse response = categoriesService.updateCategories(id, categoriesRequest);
         return ResponseEntity.ok(response);
     }
     

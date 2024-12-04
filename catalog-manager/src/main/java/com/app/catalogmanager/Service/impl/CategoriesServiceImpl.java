@@ -25,5 +25,13 @@ public class CategoriesServiceImpl implements CategoriesService {
         categoriesRepository.save(categories);
         return categoriesMapper.toResponse(categories);
     }
-    
+
+    @Override
+    public CategoriesResponse updateCategories(Long id, CategoriesRequest categoriesRequest) {
+        Categories categories = categoriesRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Categories not found"));
+        categories.setName(categoriesRequest.getName());
+        categoriesRepository.save(categories);
+        return categoriesMapper.toResponse(categories);
+    }
 }
