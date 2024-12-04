@@ -3,6 +3,8 @@ package com.app.catalogmanager.Service.impl;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.app.catalogmanager.DTO.request.CategoriesRequest;
@@ -56,5 +58,12 @@ public class CategoriesServiceImpl implements CategoriesService {
             categoriesRepository.delete(categories.get());
             return true;
         }
+    }
+
+
+    @Override
+    public Page<CategoriesResponse> allcategories(Pageable pageable) {
+        Page<Categories> categories = categoriesRepository.findAll(pageable);
+        return categories.map(categoriesMapper::toResponse);
     }
 }
