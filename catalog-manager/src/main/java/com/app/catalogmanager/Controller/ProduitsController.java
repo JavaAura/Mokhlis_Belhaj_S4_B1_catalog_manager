@@ -46,5 +46,14 @@ public class ProduitsController {
         Page<ProduitsResponse> response = produitsService.getAllProduits(pageable);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/designation")
+    public ResponseEntity<Page<ProduitsResponse>> getProduitsByDesignation(String designation, @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        if (designation == null || designation.isEmpty()) {
+            throw new IllegalArgumentException("Designation cannot be null or empty");
+        }
+        Page<ProduitsResponse> response = produitsService.getProduitsByDesignation(designation, pageable);
+        return ResponseEntity.ok(response);
+    }
     
 }

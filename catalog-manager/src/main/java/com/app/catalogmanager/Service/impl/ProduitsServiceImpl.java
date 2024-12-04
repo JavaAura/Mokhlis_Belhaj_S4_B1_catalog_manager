@@ -82,4 +82,10 @@ public class ProduitsServiceImpl implements ProduitsService {
         Page<Produits> produits = produitsRepository.findAll(pageable);
         return produits.map(produitsMapper::toResponse);
     }
+
+    @Override
+    public Page<ProduitsResponse> getProduitsByDesignation(String designation, Pageable pageable) {
+        Page<Produits> produits = produitsRepository.findByDesignationContainingIgnoreCase(designation, pageable);
+        return produits.map(produitsMapper::toResponse);
+    }
 }
