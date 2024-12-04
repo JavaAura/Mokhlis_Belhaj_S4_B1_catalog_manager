@@ -49,13 +49,15 @@ class CategoriesServiceTest {
         // Initialize test data
         categoriesRequest = new CategoriesRequest();
         categoriesRequest.setName("Test Category");
+        categoriesRequest.setDescription("Description Test");
 
         category = new Categories();
         category.setId(1L);
         category.setName("Test Category");
-
+        category.setDescription("Description Test");
         categoriesResponse = new CategoriesResponse();
         categoriesResponse.setName("Test Category");
+        categoriesResponse.setDescription("Description Test");
     }
 
     @Nested
@@ -76,6 +78,7 @@ class CategoriesServiceTest {
             // Assert
             assertNotNull(result);
             assertEquals(categoriesResponse.getName(), result.getName());
+            assertEquals(categoriesResponse.getDescription(), result.getDescription());
 
             verify(categoriesMapper).toEntity(categoriesRequest);
             verify(categoriesRepository).save(category);
@@ -113,7 +116,7 @@ class CategoriesServiceTest {
             // Assert
             assertNotNull(result);
             assertEquals(categoriesResponse.getName(), result.getName());
-
+            assertEquals(categoriesResponse.getDescription(), result.getDescription());
             verify(categoriesRepository).findById(id);
             verify(categoriesRepository).save(category);
             verify(categoriesMapper).toResponse(category);
@@ -209,7 +212,7 @@ class CategoriesServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             List<Categories> categoryList = Arrays.asList(
                 category,
-                Categories.builder().id(2L).name("Category 2").build()
+                Categories.builder().id(2L).name("Category 2").description("Description 2").build()
             );
             Page<Categories> categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
             when(categoriesRepository.findAll(pageable)).thenReturn(categoryPage);
@@ -217,8 +220,8 @@ class CategoriesServiceTest {
                 .thenAnswer(invocation -> {
                     Categories cat = invocation.getArgument(0);
                     return CategoriesResponse.builder()
-                            .id(cat.getId())
                             .name(cat.getName())
+                            .description(cat.getDescription())
                             .build();
                 });
 
@@ -246,7 +249,7 @@ class CategoriesServiceTest {
             Pageable pageable = PageRequest.of(0, 10);
             List<Categories> categoryList = Arrays.asList(
                 category,
-                Categories.builder().id(2L).name("Category 2").build()
+                Categories.builder().id(2L).name("Category 2").description("Description 2").build()
             );
             Page<Categories> categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
             when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
@@ -255,8 +258,8 @@ class CategoriesServiceTest {
                 .thenAnswer(invocation -> {
                     Categories cat = invocation.getArgument(0);
                     return CategoriesResponse.builder()
-                            .id(cat.getId())
                             .name(cat.getName())
+                            .description(cat.getDescription())
                             .build();
                 });
 

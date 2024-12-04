@@ -1,5 +1,7 @@
 package com.app.catalogmanager.Entity;
 
+import java.util.List;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
@@ -22,4 +24,11 @@ public class Categories {
     @Column(name = "name",unique = true)
     @NotBlank(message = "Name is required")
     private String name;
+
+    @Column(name = "description")
+    @NotBlank(message = "Description is required")
+    private String description;
+
+    @OneToMany(mappedBy = "categorie", cascade = CascadeType.ALL)
+    private List<Produits> produits;
 }
