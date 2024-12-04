@@ -50,12 +50,11 @@ public class CategoriesServiceImpl implements CategoriesService {
         if(id == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }
-        Optional<Categories> categories = categoriesRepository.findById(id);
-
-        if (!categories.isPresent()) {
+        boolean result = categoriesRepository.existsById(id);
+        if (!result) {
             return false;
         }else{
-            categoriesRepository.delete(categories.get());
+            categoriesRepository.deleteById(id);
             return true;
         }
     }
@@ -64,6 +63,15 @@ public class CategoriesServiceImpl implements CategoriesService {
     @Override
     public Page<CategoriesResponse> allcategories(Pageable pageable) {
         Page<Categories> categories = categoriesRepository.findAll(pageable);
+        return categories.map(categoriesMapper::toResponse);
+    }
+
+    @Override
+    public Page<CategoriesResponse> getCategoriesByName(String name, Pageable pageable) {
+        Page<Categories> categories = categoriesRepository.findByNameContainingIgnoreCase(name,pageable);
+        if (categories == null) {
+            throw new RuntimeException("Categories not found");
+        }
         return categories.map(categoriesMapper::toResponse);
     }
 }

@@ -49,5 +49,14 @@ public class CategoriesController {
         Page<CategoriesResponse> response = categoriesService.allcategories(pageable);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/name")
+    public ResponseEntity<Page<CategoriesResponse>> getCategoriesByName(String name, @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        Page<CategoriesResponse> response = categoriesService.getCategoriesByName(name, pageable);
+        return ResponseEntity.ok(response);
+    }
     
 }

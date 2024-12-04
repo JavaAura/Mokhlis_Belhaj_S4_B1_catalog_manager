@@ -11,6 +11,8 @@ public interface CategoriesService {
     CategoriesResponse updateCategories(Long id, CategoriesRequest categoriesRequest);
     boolean deleteCategories(Long id);
     Page<CategoriesResponse> allcategories(Pageable pageable);
+
+    Page<   CategoriesResponse> getCategoriesByName(String name, Pageable pageable);
 }
 
 
