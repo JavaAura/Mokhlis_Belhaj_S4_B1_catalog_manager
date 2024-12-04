@@ -16,9 +16,9 @@ public class ProduitsRequest {
 
     private String designation;
 
-    private double prix;
+    private Double prix;
 
-    private int quantite;
+    private Integer quantite;
 
     private CategoriesRequest categorie;
 }

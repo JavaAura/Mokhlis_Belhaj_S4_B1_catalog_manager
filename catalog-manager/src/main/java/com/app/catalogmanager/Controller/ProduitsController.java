@@ -4,10 +4,7 @@ import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.app.catalogmanager.DTO.request.ProduitsRequest;
 import com.app.catalogmanager.DTO.response.ProduitsResponse;
@@ -23,6 +20,12 @@ public class ProduitsController {
     @PostMapping
     public ResponseEntity<ProduitsResponse> createProduits(@Valid @RequestBody ProduitsRequest produitsRequest) {
         ProduitsResponse produitsResponse = produitsService.createProduits(produitsRequest);
+        return ResponseEntity.ok(produitsResponse);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ProduitsResponse> updateProduits(@PathVariable Long id, @Valid @RequestBody ProduitsRequest produitsRequest) {
+        ProduitsResponse produitsResponse = produitsService.updateProduits(id, produitsRequest);
         return ResponseEntity.ok(produitsResponse);
     }
     

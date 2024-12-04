@@ -34,4 +34,33 @@ public class ProduitsServiceImpl implements ProduitsService {
         produitsRepository.save(produits);
         return produitsMapper.toResponse(produits);
     }
+
+    @Override
+    public ProduitsResponse updateProduits(Long id, ProduitsRequest produitsRequest) {
+        Produits produits = produitsRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Produits not found"));
+        if(produitsRequest.getDesignation() != null) {
+            produits.setDesignation(produitsRequest.getDesignation());
+        }
+        if(produitsRequest.getPrix() != null) {
+            Double prix = produitsRequest.getPrix();
+            if (prix <= 0) {
+                throw new IllegalArgumentException("Prix must be greater than 0");
+            }
+            produits.setPrix(prix);
+        }
+        if(produitsRequest.getQuantite() != null) {
+            if (produitsRequest.getQuantite() < 0) {
+                throw new IllegalArgumentException("Quantite cannot be negative");
+            }
+            produits.setQuantite(produitsRequest.getQuantite());
+        }
+        if(produitsRequest.getCategorie() != null) {
+            Categories categories = categoriesRepository.findById(produitsRequest.getCategorie().getId())
+            .orElseThrow(() -> new RuntimeException("Categorie not found"));
+            produits.setCategorie(categories);
+        }
+        produitsRepository.save(produits);
+        return produitsMapper.toResponse(produits);
+    }
 }
