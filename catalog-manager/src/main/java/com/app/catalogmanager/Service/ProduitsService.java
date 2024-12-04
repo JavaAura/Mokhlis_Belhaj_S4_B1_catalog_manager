@@ -13,5 +13,5 @@ public interface ProduitsService {
     boolean deleteProduits(Long id);
     Page<ProduitsResponse> getAllProduits(Pageable pageable);
     Page<ProduitsResponse> getProduitsByDesignation(String designation, Pageable pageable);
-    
+    Page<ProduitsResponse> getProduitsByCategorie(Long categorieId, Pageable pageable);
 }

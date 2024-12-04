@@ -88,4 +88,10 @@ public class ProduitsServiceImpl implements ProduitsService {
         Page<Produits> produits = produitsRepository.findByDesignationContainingIgnoreCase(designation, pageable);
         return produits.map(produitsMapper::toResponse);
     }
+
+    @Override
+    public Page<ProduitsResponse> getProduitsByCategorie(Long categorieId, Pageable pageable) {
+        Page<Produits> produits = produitsRepository.findByCategorieId(categorieId, pageable);
+        return produits.map(produitsMapper::toResponse);
+    }
 }

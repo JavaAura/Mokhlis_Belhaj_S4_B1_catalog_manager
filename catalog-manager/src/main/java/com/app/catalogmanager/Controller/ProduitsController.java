@@ -55,5 +55,14 @@ public class ProduitsController {
         Page<ProduitsResponse> response = produitsService.getProduitsByDesignation(designation, pageable);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/categorie")
+    public ResponseEntity<Page<ProduitsResponse>> getProduitsByCategorie(Long categorieId, @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        if (categorieId == null) {
+            throw new IllegalArgumentException("CategorieId cannot be null");
+        }
+        Page<ProduitsResponse> response = produitsService.getProduitsByCategorie(categorieId, pageable);
+        return ResponseEntity.ok(response);
+    }
     
 }

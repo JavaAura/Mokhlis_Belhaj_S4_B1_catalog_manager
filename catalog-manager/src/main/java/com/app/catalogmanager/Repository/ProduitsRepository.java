@@ -12,5 +12,6 @@ import com.app.catalogmanager.Entity.Produits;
 public interface ProduitsRepository extends JpaRepository<Produits, Long> {
 
      Page<Produits> findByDesignationContainingIgnoreCase(String designation, Pageable pageable);
+     Page<Produits> findByCategorieId(Long categorieId, Pageable pageable);
 
 }
