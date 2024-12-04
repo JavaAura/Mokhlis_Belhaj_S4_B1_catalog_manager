@@ -1,6 +1,8 @@
 package com.app.catalogmanager.Service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.app.catalogmanager.DTO.request.ProduitsRequest;
@@ -73,5 +75,11 @@ public class ProduitsServiceImpl implements ProduitsService {
             produitsRepository.deleteById(id);
             return true;
         }
+    }
+
+    @Override
+    public Page<ProduitsResponse> getAllProduits(Pageable pageable) {
+        Page<Produits> produits = produitsRepository.findAll(pageable);
+        return produits.map(produitsMapper::toResponse);
     }
 }

@@ -3,6 +3,8 @@ package com.app.catalogmanager.Controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,6 +39,12 @@ public class ProduitsController {
         } else {
             return ResponseEntity.noContent().build();
         }
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<ProduitsResponse>> getAllProduits(@PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<ProduitsResponse> response = produitsService.getAllProduits(pageable);
+        return ResponseEntity.ok(response);
     }
     
 }
