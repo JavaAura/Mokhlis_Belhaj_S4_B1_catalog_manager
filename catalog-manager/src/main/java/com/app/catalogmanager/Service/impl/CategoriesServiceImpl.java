@@ -47,16 +47,15 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public boolean deleteCategories(Long id) {
-        if(id == null) {
+        if (id == null) {
             throw new IllegalArgumentException("Id cannot be null");
         }
-        boolean result = categoriesRepository.existsById(id);
-        if (!result) {
-            return false;
-        }else{
-            categoriesRepository.deleteById(id);
+        Optional<Categories> categoryOptional = categoriesRepository.findById(id);
+        if (categoryOptional.isPresent()) {
+            categoriesRepository.delete(categoryOptional.get());
             return true;
         }
+        return false;
     }
 
 

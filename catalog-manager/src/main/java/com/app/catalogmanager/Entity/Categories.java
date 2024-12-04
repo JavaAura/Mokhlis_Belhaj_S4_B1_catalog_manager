@@ -3,11 +3,16 @@ package com.app.catalogmanager.Entity;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-
+@Builder
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "categories")
 public class Categories {
     @Id

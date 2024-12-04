@@ -12,7 +12,7 @@ public interface CategoriesService {
     boolean deleteCategories(Long id);
     Page<CategoriesResponse> allcategories(Pageable pageable);
 
-    Page<   CategoriesResponse> getCategoriesByName(String name, Pageable pageable);
+    Page<CategoriesResponse> getCategoriesByName(String name, Pageable pageable);
 }
 
 
