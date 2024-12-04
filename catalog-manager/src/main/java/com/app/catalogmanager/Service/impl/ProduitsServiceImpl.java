@@ -13,6 +13,9 @@ import com.app.catalogmanager.Mapper.ProduitsMapper;
 import com.app.catalogmanager.Repository.ProduitsRepository;
 import com.app.catalogmanager.Repository.CategoriesRepository;
 import com.app.catalogmanager.Service.ProduitsService;
+import com.app.catalogmanager.Exception.ResourceNotFoundException;
+import com.app.catalogmanager.Exception.BadRequestException;
+import com.app.catalogmanager.Validation.ProduitsValidation;
 
 
 @Service
@@ -27,11 +30,15 @@ public class ProduitsServiceImpl implements ProduitsService {
     @Autowired
     private ProduitsMapper produitsMapper;
 
+    @Autowired
+    private ProduitsValidation produitsValidation;
+
     @Override
     public ProduitsResponse createProduits(ProduitsRequest produitsRequest) {
+        produitsValidation.validateCreateRequest(produitsRequest);
         Produits produits = produitsMapper.toEntity(produitsRequest);
         Categories categories = categoriesRepository.findById(produitsRequest.getCategorie().getId())
-        .orElseThrow(() -> new RuntimeException("Categorie not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Categorie not found"));
         produits.setCategorie(categories);
         produitsRepository.save(produits);
         return produitsMapper.toResponse(produits);
@@ -39,27 +46,28 @@ public class ProduitsServiceImpl implements ProduitsService {
 
     @Override
     public ProduitsResponse updateProduits(Long id, ProduitsRequest produitsRequest) {
+        produitsValidation.validateUpdateRequest(id, produitsRequest);
         Produits produits = produitsRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Produits not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Produits not found"));
         if(produitsRequest.getDesignation() != null) {
             produits.setDesignation(produitsRequest.getDesignation());
         }
         if(produitsRequest.getPrix() != null) {
             Double prix = produitsRequest.getPrix();
             if (prix <= 0) {
-                throw new IllegalArgumentException("Prix must be greater than 0");
+                throw new BadRequestException("Prix must be greater than 0");
             }
             produits.setPrix(prix);
         }
         if(produitsRequest.getQuantite() != null) {
             if (produitsRequest.getQuantite() < 0) {
-                throw new IllegalArgumentException("Quantite cannot be negative");
+                throw new BadRequestException("Quantite cannot be negative");
             }
             produits.setQuantite(produitsRequest.getQuantite());
         }
         if(produitsRequest.getCategorie() != null) {
             Categories categories = categoriesRepository.findById(produitsRequest.getCategorie().getId())
-            .orElseThrow(() -> new RuntimeException("Categorie not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Categorie not found"));
             produits.setCategorie(categories);
         }
         produitsRepository.save(produits);
@@ -68,6 +76,7 @@ public class ProduitsServiceImpl implements ProduitsService {
 
     @Override
     public boolean deleteProduits(Long id) {
+        produitsValidation.validateDeleteRequest(id);
         boolean exists = produitsRepository.existsById(id);
         if (!exists) {
             return false;

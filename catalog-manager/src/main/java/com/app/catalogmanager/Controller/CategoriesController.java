@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import com.app.catalogmanager.DTO.request.CategoriesRequest;
 import com.app.catalogmanager.DTO.response.CategoriesResponse;
 import com.app.catalogmanager.Service.CategoriesService;
+import com.app.catalogmanager.Exception.BadRequestException;
+import com.app.catalogmanager.Exception.ResourceNotFoundException;
 
 
 @RestController
@@ -38,10 +40,10 @@ public class CategoriesController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Boolean> deleteCategories(@PathVariable Long id) {
         boolean deleted = categoriesService.deleteCategories(id);
-        if(deleted) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        if(!deleted) {
+            throw new ResourceNotFoundException("Category not found with id: " + id);
+                }
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
@@ -53,7 +55,7 @@ public class CategoriesController {
     @GetMapping("/name")
     public ResponseEntity<Page<CategoriesResponse>> getCategoriesByName(String name, @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be null or empty");
+            throw new BadRequestException("Name cannot be null or empty");
         }
         Page<CategoriesResponse> response = categoriesService.getCategoriesByName(name, pageable);
         return ResponseEntity.ok(response);
