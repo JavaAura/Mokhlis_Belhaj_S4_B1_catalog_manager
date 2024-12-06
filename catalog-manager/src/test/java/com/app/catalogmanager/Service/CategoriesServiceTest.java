@@ -3,9 +3,12 @@ package com.app.catalogmanager.Service;
 import com.app.catalogmanager.DTO.request.CategoriesRequest;
 import com.app.catalogmanager.DTO.response.CategoriesResponse;
 import com.app.catalogmanager.Entity.Categories;
+import com.app.catalogmanager.Exception.BadRequestException;
+import com.app.catalogmanager.Exception.ResourceNotFoundException;
 import com.app.catalogmanager.Mapper.CategoriesMapper;
 import com.app.catalogmanager.Repository.CategoriesRepository;
 import com.app.catalogmanager.Service.impl.CategoriesServiceImpl;
+import com.app.catalogmanager.Validation.CategoriesValidation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,27 +40,36 @@ class CategoriesServiceTest {
     @Mock
     private CategoriesMapper categoriesMapper;
 
+    @Mock
+    private CategoriesValidation categoriesValidation;
+
     @InjectMocks
     private CategoriesServiceImpl categoriesService;
 
     private CategoriesRequest categoriesRequest;
     private Categories category;
     private CategoriesResponse categoriesResponse;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
-        // Initialize test data
-        categoriesRequest = new CategoriesRequest();
-        categoriesRequest.setName("Test Category");
-        categoriesRequest.setDescription("Description Test");
+        categoriesRequest = CategoriesRequest.builder()
+                .name("Test Category")
+                .description("Description Test")
+                .build();
 
-        category = new Categories();
-        category.setId(1L);
-        category.setName("Test Category");
-        category.setDescription("Description Test");
-        categoriesResponse = new CategoriesResponse();
-        categoriesResponse.setName("Test Category");
-        categoriesResponse.setDescription("Description Test");
+        category = Categories.builder()
+                .id(1L)
+                .name("Test Category")
+                .description("Description Test")
+                .build();
+
+        categoriesResponse = CategoriesResponse.builder()
+                .name("Test Category")
+                .description("Description Test")
+                .build();
+
+        pageable = PageRequest.of(0, 10);
     }
 
     @Nested
@@ -68,6 +80,7 @@ class CategoriesServiceTest {
         @DisplayName("Should successfully create a category")
         void createCategories_Success() {
             // Arrange
+            doNothing().when(categoriesValidation).validateCreateRequest(any(CategoriesRequest.class));
             when(categoriesMapper.toEntity(any(CategoriesRequest.class))).thenReturn(category);
             when(categoriesRepository.save(any(Categories.class))).thenReturn(category);
             when(categoriesMapper.toResponse(any(Categories.class))).thenReturn(categoriesResponse);
@@ -79,22 +92,31 @@ class CategoriesServiceTest {
             assertNotNull(result);
             assertEquals(categoriesResponse.getName(), result.getName());
             assertEquals(categoriesResponse.getDescription(), result.getDescription());
-
+            verify(categoriesValidation).validateCreateRequest(categoriesRequest);
             verify(categoriesMapper).toEntity(categoriesRequest);
             verify(categoriesRepository).save(category);
             verify(categoriesMapper).toResponse(category);
         }
 
         @Test
-        @DisplayName("Should throw exception when request is null")
-        void createCategories_NullRequest() {
+        @DisplayName("Should throw BadRequestException when validation fails")
+        void createCategories_ValidationFails() {
+            // Arrange
+            String errorMessage = "Invalid category data";
+            doThrow(new BadRequestException(errorMessage))
+                .when(categoriesValidation).validateCreateRequest(any(CategoriesRequest.class));
+
             // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> 
-                categoriesService.createCategories(null)
+            BadRequestException exception = assertThrows(BadRequestException.class, 
+                () -> categoriesService.createCategories(categoriesRequest)
             );
-            
+            assertEquals(errorMessage, exception.getMessage());
             verify(categoriesRepository, never()).save(any());
+            verify(categoriesMapper, never()).toEntity(any());
+            verify(categoriesMapper, never()).toResponse(any());
         }
+
+      
     }
 
     @Nested
@@ -106,6 +128,7 @@ class CategoriesServiceTest {
         void updateCategories_Success() {
             // Arrange
             Long id = 1L;
+            doNothing().when(categoriesValidation).validateUpdateRequest(id, categoriesRequest);
             when(categoriesRepository.findById(id)).thenReturn(Optional.of(category));
             when(categoriesRepository.save(any(Categories.class))).thenReturn(category);
             when(categoriesMapper.toResponse(any(Categories.class))).thenReturn(categoriesResponse);
@@ -117,37 +140,28 @@ class CategoriesServiceTest {
             assertNotNull(result);
             assertEquals(categoriesResponse.getName(), result.getName());
             assertEquals(categoriesResponse.getDescription(), result.getDescription());
+            verify(categoriesValidation).validateUpdateRequest(id, categoriesRequest);
             verify(categoriesRepository).findById(id);
             verify(categoriesRepository).save(category);
             verify(categoriesMapper).toResponse(category);
         }
 
         @Test
-        @DisplayName("Should throw exception when category not found")
+        @DisplayName("Should throw ResourceNotFoundException when category not found")
         void updateCategories_CategoryNotFound() {
             // Arrange
             Long id = 1L;
+            doNothing().when(categoriesValidation).validateUpdateRequest(id, categoriesRequest);
             when(categoriesRepository.findById(id)).thenReturn(Optional.empty());
 
             // Act & Assert
-            assertThrows(RuntimeException.class, () -> 
-                categoriesService.updateCategories(id, categoriesRequest)
+            ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, 
+                () -> categoriesService.updateCategories(id, categoriesRequest)
             );
-
+            assertEquals("Category not found with id: " + id, exception.getMessage());
             verify(categoriesRepository).findById(id);
             verify(categoriesRepository, never()).save(any());
-        }
-
-        @Test
-        @DisplayName("Should throw exception when id is null")
-        void updateCategories_NullId() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> 
-                categoriesService.updateCategories(null, categoriesRequest)
-            );
-
-            verify(categoriesRepository, never()).findById(any());
-            verify(categoriesRepository, never()).save(any());
+            verify(categoriesMapper, never()).toResponse(any());
         }
     }
 
@@ -160,6 +174,7 @@ class CategoriesServiceTest {
         void deleteCategories_Success() {
             // Arrange
             Long id = 1L;
+            doNothing().when(categoriesValidation).validateDeleteRequest(id);
             when(categoriesRepository.findById(id)).thenReturn(Optional.of(category));
             doNothing().when(categoriesRepository).delete(any(Categories.class));
 
@@ -168,6 +183,7 @@ class CategoriesServiceTest {
 
             // Assert
             assertTrue(result);
+            verify(categoriesValidation).validateDeleteRequest(id);
             verify(categoriesRepository).findById(id);
             verify(categoriesRepository).delete(category);
         }
@@ -177,6 +193,7 @@ class CategoriesServiceTest {
         void deleteCategories_CategoryNotFound() {
             // Arrange
             Long id = 1L;
+            doNothing().when(categoriesValidation).validateDeleteRequest(id);
             when(categoriesRepository.findById(id)).thenReturn(Optional.empty());
 
             // Act
@@ -184,133 +201,91 @@ class CategoriesServiceTest {
 
             // Assert
             assertFalse(result);
+            verify(categoriesValidation).validateDeleteRequest(id);
             verify(categoriesRepository).findById(id);
-            verify(categoriesRepository, never()).delete(any());
-        }
-
-        @Test
-        @DisplayName("Should throw exception when id is null")
-        void deleteCategories_NullId() {
-            // Act & Assert
-            assertThrows(IllegalArgumentException.class, () -> 
-                categoriesService.deleteCategories(null)
-            );
-
-            verify(categoriesRepository, never()).findById(any());
             verify(categoriesRepository, never()).delete(any());
         }
     }
 
-        @Nested
-    @DisplayName("Get All Categories Tests")
-    class GetAllCategoriesTests {
+    @Nested
+    @DisplayName("Get Categories Tests")
+    class GetCategoriesTests {
 
         @Test
-        @DisplayName("Should return page of categories")
-        void allCategories_Success() {
+        @DisplayName("Should return all categories with pagination")
+        void getAllCategories_Success() {
             // Arrange
-            Pageable pageable = PageRequest.of(0, 10);
-            List<Categories> categoryList = Arrays.asList(
-                category,
-                Categories.builder().id(2L).name("Category 2").description("Description 2").build()
-            );
-            Page<Categories> categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
+            List<Categories> categories = Arrays.asList(category);
+            Page<Categories> categoryPage = new PageImpl<>(categories, pageable, categories.size());
             when(categoriesRepository.findAll(pageable)).thenReturn(categoryPage);
-            when(categoriesMapper.toResponse(any(Categories.class)))
-                .thenAnswer(invocation -> {
-                    Categories cat = invocation.getArgument(0);
-                    return CategoriesResponse.builder()
-                            .name(cat.getName())
-                            .description(cat.getDescription())
-                            .build();
-                });
+            when(categoriesMapper.toResponse(any(Categories.class))).thenReturn(categoriesResponse);
 
             // Act
             Page<CategoriesResponse> result = categoriesService.allcategories(pageable);
 
             // Assert
             assertNotNull(result);
-            assertEquals(2, result.getTotalElements());
-            assertEquals(2, result.getContent().size());
+            assertEquals(1, result.getTotalElements());
+            assertEquals(categoriesResponse.getName(), result.getContent().get(0).getName());
             verify(categoriesRepository).findAll(pageable);
-            verify(categoriesMapper, times(2)).toResponse(any(Categories.class));
-        }
-    }
-
-    @Nested
-    @DisplayName("Get Categories By Name Tests")
-    class GetCategoriesByNameTests {
-
-        @Test
-        @DisplayName("Should return page of categories when searching by name")
-        void getCategoriesByName_Success() {
-            // Arrange
-            String searchName = "cat";
-            Pageable pageable = PageRequest.of(0, 10);
-            List<Categories> categoryList = Arrays.asList(
-                category,
-                Categories.builder().id(2L).name("Category 2").description("Description 2").build()
-            );
-            Page<Categories> categoryPage = new PageImpl<>(categoryList, pageable, categoryList.size());
-            when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
-                .thenReturn(categoryPage);
-            when(categoriesMapper.toResponse(any(Categories.class)))
-                .thenAnswer(invocation -> {
-                    Categories cat = invocation.getArgument(0);
-                    return CategoriesResponse.builder()
-                            .name(cat.getName())
-                            .description(cat.getDescription())
-                            .build();
-                });
-
-            // Act
-            Page<CategoriesResponse> result = categoriesService.getCategoriesByName(searchName, pageable);
-
-            // Assert
-            assertNotNull(result);
-            assertEquals(2, result.getTotalElements());
-            assertEquals(2, result.getContent().size());
-            verify(categoriesRepository).findByNameContainingIgnoreCase(searchName, pageable);
-            verify(categoriesMapper, times(2)).toResponse(any(Categories.class));
+            verify(categoriesMapper, times(categories.size())).toResponse(any(Categories.class));
         }
 
         @Test
-        @DisplayName("Should throw RuntimeException when no categories found")
-        void getCategoriesByName_NotFound() {
+        @DisplayName("Should return empty page when no categories exist")
+        void getAllCategories_EmptyResult() {
             // Arrange
-            String searchName = "nonexistent";
-            Pageable pageable = PageRequest.of(0, 10);
-            when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
-                .thenReturn(null);
-
-            // Act & Assert
-            RuntimeException exception = assertThrows(RuntimeException.class, () ->
-                categoriesService.getCategoriesByName(searchName, pageable)
-            );
-            assertEquals("Categories not found", exception.getMessage());
-            verify(categoriesRepository).findByNameContainingIgnoreCase(searchName, pageable);
-            verify(categoriesMapper, never()).toResponse(any(Categories.class));
-        }
-
-        @Test
-        @DisplayName("Should return empty page when no matches found")
-        void getCategoriesByName_EmptyResult() {
-            // Arrange
-            String searchName = "xyz";
-            Pageable pageable = PageRequest.of(0, 10);
             Page<Categories> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-            when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
-                .thenReturn(emptyPage);
+            when(categoriesRepository.findAll(pageable)).thenReturn(emptyPage);
 
             // Act
-            Page<CategoriesResponse> result = categoriesService.getCategoriesByName(searchName, pageable);
+            Page<CategoriesResponse> result = categoriesService.allcategories(pageable);
 
             // Assert
             assertNotNull(result);
             assertTrue(result.getContent().isEmpty());
             assertEquals(0, result.getTotalElements());
+            verify(categoriesRepository).findAll(pageable);
+            verify(categoriesMapper, never()).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should return filtered categories by name")
+        void getCategoriesByName_Success() {
+            // Arrange
+            String searchName = "Test";
+            List<Categories> categories = Arrays.asList(category);
+            Page<Categories> categoryPage = new PageImpl<>(categories, pageable, categories.size());
+            when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
+                .thenReturn(categoryPage);
+            when(categoriesMapper.toResponse(any(Categories.class))).thenReturn(categoriesResponse);
+
+            // Act
+            Page<CategoriesResponse> result = categoriesService.getCategoriesByName(searchName, pageable);
+
+            // Assert
+            assertNotNull(result);
+            assertFalse(result.getContent().isEmpty());
+            assertEquals(categoriesResponse.getName(), result.getContent().get(0).getName());
             verify(categoriesRepository).findByNameContainingIgnoreCase(searchName, pageable);
-            verify(categoriesMapper, never()).toResponse(any(Categories.class));
+            verify(categoriesMapper, times(categories.size())).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should throw RuntimeException when search result is null")
+        void getCategoriesByName_NullResult() {
+            // Arrange
+            String searchName = "NonExistent";
+            when(categoriesRepository.findByNameContainingIgnoreCase(searchName, pageable))
+                .thenReturn(null);
+
+            // Act & Assert
+            RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> categoriesService.getCategoriesByName(searchName, pageable)
+            );
+            assertEquals("Categories not found", exception.getMessage());
+            verify(categoriesRepository).findByNameContainingIgnoreCase(searchName, pageable);
+            verify(categoriesMapper, never()).toResponse(any());
         }
     }
 }

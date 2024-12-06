@@ -13,6 +13,8 @@ import com.app.catalogmanager.Entity.Categories;
 import com.app.catalogmanager.Mapper.CategoriesMapper;
 import com.app.catalogmanager.Repository.CategoriesRepository;
 import com.app.catalogmanager.Service.CategoriesService;
+import com.app.catalogmanager.Exception.ResourceNotFoundException;
+import com.app.catalogmanager.Validation.CategoriesValidation;
 
 @Service
 public class CategoriesServiceImpl implements CategoriesService {
@@ -23,11 +25,12 @@ public class CategoriesServiceImpl implements CategoriesService {
     @Autowired
     private CategoriesMapper categoriesMapper;
 
+    @Autowired
+    private CategoriesValidation categoriesValidation;
+
     @Override
     public CategoriesResponse createCategories(CategoriesRequest categoriesRequest) {
-        if(categoriesRequest == null) {
-            throw new IllegalArgumentException("Categories request cannot be null");
-        }
+        categoriesValidation.validateCreateRequest(categoriesRequest);
         Categories categories = categoriesMapper.toEntity(categoriesRequest);
         categoriesRepository.save(categories);
         return categoriesMapper.toResponse(categories);
@@ -35,11 +38,9 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public CategoriesResponse updateCategories(Long id, CategoriesRequest categoriesRequest) {
-        if(id == null) {
-            throw new IllegalArgumentException("Id cannot be null");
-        }
+        categoriesValidation.validateUpdateRequest(id, categoriesRequest);
         Categories categories = categoriesRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Categories not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         categories.setName(categoriesRequest.getName());
         categoriesRepository.save(categories);
         return categoriesMapper.toResponse(categories);
@@ -47,9 +48,7 @@ public class CategoriesServiceImpl implements CategoriesService {
 
     @Override
     public boolean deleteCategories(Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Id cannot be null");
-        }
+        categoriesValidation.validateDeleteRequest(id);
         Optional<Categories> categoryOptional = categoriesRepository.findById(id);
         if (categoryOptional.isPresent()) {
             categoriesRepository.delete(categoryOptional.get());
