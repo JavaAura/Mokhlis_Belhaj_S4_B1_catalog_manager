@@ -40,7 +40,7 @@ public class SecurityConfigProd extends WebSecurityConfigurerAdapter {
             .headers().frameOptions().disable()
             .and()
             .authorizeRequests()
-                .antMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                .antMatchers("/api/auth/**", "/h2-console/**", "/swagger-ui/**", "/api-docs/**").permitAll()
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                 .anyRequest().authenticated()
