@@ -23,10 +23,10 @@ Catalog Manager est une application Rest API Spring Boot qui permet de gérer un
 ## Conseption UML
 
 ### Diagramme de classe
-![Diagramme de classe](src/main/resources/UML.png)
+![Diagramme de classe]([src/main/resources/UML.png](https://github.com/JavaAura/Mokhlis_Belhaj_S4_B1_catalog_manager/blob/main/UML/class_diagram.png?raw=true))
 
 ### Diagramme de cas d'utilisation
-![Diagramme de cas d'utilisation](src/main/resources/UseCaseDiagram.png)
+![Diagramme de cas d'utilisation]([src/main/resources/UseCaseDiagram.png](https://github.com/JavaAura/Mokhlis_Belhaj_S4_B1_catalog_manager/blob/main/UML/use-case-diagram.png?raw=true))
 
 ## Configuration
 
